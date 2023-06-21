@@ -87,8 +87,9 @@ def start_whois(no_domain_entry=False, domain="example.com"):
     print(f"Registrant: {domain_info.registrant}")
     print(f"Emails: {' '.join(domain_info.emails)}")
 
-def dns_records_info():
-    domain = input("Domain: ")
+def dns_records_info(no_domain_entry=False, domain="example.com"):
+    if not no_domain_entry:
+        domain = input("Domain: ")
     dns_records_types = [
         'A', 'AAAA', 'CAA', 'CERT', 'CNAME', 'DNSKEY', 'DS',
         'HTTPS', 'LOC', 'MX', 'NAPTR', 'NS', 'PTR', 'SMIMEA',
@@ -113,6 +114,9 @@ def complex_ip_info():
         except socket.gaierror:
             print("That domain doesn't have a website.")
             exit(1)
+    else:
+        # In case if input address is ip
+        ip = address
 
     data = requests.get(f"https://ipapi.co/{ip}/json/").json()
     print(f"IP: {data['ip']}")
@@ -135,6 +139,10 @@ def complex_ip_info():
         print('-' * 32)
         print("WHOIS Info:")
         start_whois(no_domain_entry=True, domain=address)
+
+        print('-'*32)
+        print("All DNS records:")
+        dns_records_info(no_domain_entry=True, domain=address)
 
 
 def spam_db_check():
