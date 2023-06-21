@@ -40,6 +40,7 @@ For getting Complex IP/Domain Info it uses: socket (getting ip from domain), ipa
 For checking in spam db it uses: [AbuseIPDB API (v2)](https://docs.abuseipdb.com/?python#check-endpoint)
 
 # Installation
+P.S. in order to use nmap you have to install nmap on your system (at least binary)
 
     git clone https://github.com/kolbanidze/SIPT
     cd SIPT
