@@ -170,7 +170,8 @@ def spam_db_check():
         api_key = input("API Key: ")
         with open('.env', 'w') as file:
             file.write(f"API={api_key}")
-        exit(0)
+        print("Your API key was successfully saved.")
+        load_dotenv(dotenv_path)
 
     url = 'https://api.abuseipdb.com/api/v2/check'
     api = os.getenv('API')
