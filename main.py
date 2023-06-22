@@ -6,6 +6,8 @@ import socket
 import os
 from dotenv import load_dotenv
 
+DNS_RECORDS_LOG_FILE = "dns_log.txt"
+
 def start_nmap():
     def _scan_ports(scanallports=False, scan1024ports=False, scancustomrangeofports=False, scanoneport=False):
         ip = input("IP: ")
@@ -86,6 +88,7 @@ def start_whois(no_domain_entry=False, domain="example.com"):
     print(f"Name servers: {' '.join(domain_info.name_servers)}")
     print(f"Registrant: {domain_info.registrant}")
     print(f"Emails: {' '.join(domain_info.emails)}")
+    entry()
 
 def dns_records_info(no_domain_entry=False, domain="example.com"):
     if not no_domain_entry:
@@ -95,13 +98,23 @@ def dns_records_info(no_domain_entry=False, domain="example.com"):
         'HTTPS', 'LOC', 'MX', 'NAPTR', 'NS', 'PTR', 'SMIMEA',
         'SRV', 'SSHFP', 'SVCB', 'TLSA', 'TXT', 'URI'
     ]
+
+    dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
+    # Cloudflare Public DNS
+    dns.resolver.default_resolver.nameservers = ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001']
     for record in dns_records_types:
         try:
             query_answer = dns.resolver.resolve(domain, record)
             for data in query_answer:
                 print(f"Record: {record}\n\t{data}")
-        except:
-            pass
+        # Logging non-existent dns records
+        except Exception as e:
+            with open(DNS_RECORDS_LOG_FILE, 'a+') as file:
+                file.write(f"{e}\n")
+    with open(DNS_RECORDS_LOG_FILE, 'a') as file:
+        file.write('-'*64+'\n')
+    print(f"Non-existent DNS records were written into {DNS_RECORDS_LOG_FILE}")
+    entry()
 
 def complex_ip_info():
     def _is_domain(address):
@@ -143,6 +156,8 @@ def complex_ip_info():
         print('-'*32)
         print("All DNS records:")
         dns_records_info(no_domain_entry=True, domain=address)
+
+    entry()
 
 
 def spam_db_check():
@@ -191,6 +206,7 @@ def spam_db_check():
     print(f"Total amount of reports: {data['totalReports']}")
     print(f"Number of distinct users: {data['numDistinctUsers']}")
     print(f"Last reported at: {data['lastReportedAt']}")
+    entry()
 
 
 nmap_menu = """
