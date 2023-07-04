@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 DNS_RECORDS_LOG_FILE = "dns_log.txt"
 
+
 def start_nmap():
     def _scan_ports(scanallports=False, scan1024ports=False, scancustomrangeofports=False, scanoneport=False):
         ip = input("IP: ")
@@ -29,24 +30,28 @@ def start_nmap():
         else:
             print("You must specify scan mode")
             exit(1)
+        try:
+            for protocol in nm[ip].all_protocols():
+                print("-" * 32)
+                print("Protocol:", protocol)
+                print("State:", nm[ip].state())
 
-        for protocol in nm[ip].all_protocols():
-            print("-" * 32)
-            print("Protocol:", protocol)
-            print("State:", nm[ip].state())
+                ports = sorted(nm[ip][protocol].keys())
+                host = nm[ip][protocol]
+                for port in ports:
+                    if host[port]['state'] == 'open':
+                        print(f"Port: {port}"
+                              f"\n\tState: {host[port]['state']}"
+                              f"\n\tReason: {host[port]['reason']}"
+                              f"\n\tName: {host[port]['name']}"
+                              f"\n\tProduct: {host[port]['product']}"
+                              f"\n\tVersion: {host[port]['version']}"
+                              f"\n\tExtra info: {host[port]['extrainfo']}"
+                              f"\n\tCPE: {host[port]['cpe']}")
+        except KeyError:
+            print("An error occurred. May be problem in internet connection?")
+            exit(1)
 
-            ports = sorted(nm[ip][protocol].keys())
-            host = nm[ip][protocol]
-            for port in ports:
-                if host[port]['state'] == 'open':
-                    print(f"Port: {port}"
-                          f"\n\tState: {host[port]['state']}"
-                          f"\n\tReason: {host[port]['reason']}"
-                          f"\n\tName: {host[port]['name']}"
-                          f"\n\tProduct: {host[port]['product']}"
-                          f"\n\tVersion: {host[port]['version']}"
-                          f"\n\tExtra info: {host[port]['extrainfo']}"
-                          f"\n\tCPE: {host[port]['cpe']}")
         start_nmap()
     print(nmap_menu)
     try:
@@ -69,6 +74,7 @@ def start_nmap():
         case 99:
             entry()
 
+
 def start_whois(no_domain_entry=False, domain="example.com"):
     if not no_domain_entry:
         domain = input("Domain: ")
@@ -90,6 +96,7 @@ def start_whois(no_domain_entry=False, domain="example.com"):
     print(f"Emails: {' '.join(domain_info.emails)}")
     entry()
 
+
 def dns_records_info(no_domain_entry=False, domain="example.com"):
     if not no_domain_entry:
         domain = input("Domain: ")
@@ -98,10 +105,23 @@ def dns_records_info(no_domain_entry=False, domain="example.com"):
         'HTTPS', 'LOC', 'MX', 'NAPTR', 'NS', 'PTR', 'SMIMEA',
         'SRV', 'SSHFP', 'SVCB', 'TLSA', 'TXT', 'URI'
     ]
-
     dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
-    # Cloudflare Public DNS
-    dns.resolver.default_resolver.nameservers = ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001']
+    dns_entry = input("Enter DNS resolverer (0 - default (cloudflare), 1 - custom): ")
+    match dns_entry:
+        case "0":
+            dns.resolver.default_resolver.nameservers = ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111',
+                                                         '2606:4700:4700::1001']
+        case "1":
+            dns_nameservers = []
+            active = True
+            while active:
+                dns_nameserver = input("Enter DNS nameserver (0 - when done): ")
+                if dns_nameserver == "0":
+                    dns.resolver.default_resolver.nameservers = dns_nameservers
+                    active = False
+                else:
+                    dns_nameservers.append(dns_nameserver)
+
     for record in dns_records_types:
         try:
             query_answer = dns.resolver.resolve(domain, record)
@@ -116,9 +136,10 @@ def dns_records_info(no_domain_entry=False, domain="example.com"):
     print(f"Non-existent DNS records were written into {DNS_RECORDS_LOG_FILE}")
     entry()
 
+
 def complex_ip_info():
-    def _is_domain(address):
-        return not address.replace('.', '').isnumeric()
+    def _is_domain(adr):
+        return not adr.replace('.', '').isnumeric()
 
     address = input("IP/Domain: ")
     if _is_domain(address):
@@ -130,26 +151,29 @@ def complex_ip_info():
     else:
         # In case if input address is ip
         ip = address
-
-    data = requests.get(f"https://ipapi.co/{ip}/json/").json()
-    print(f"IP: {data['ip']}")
-    print(f"Version: {data['version']}")
-    print(f"City: {data['city']}")
-    print(f"Region: {data['region']}")
-    print(f"Region code: {data['region_code']}")
-    print(f"Country code: {data['country_code']}")
-    print(f"Country name: {data['country_name']}")
-    print(f"Country TLD: {data['country_tld']}")
-    print(f"In EU: {data['in_eu']}")
-    print(f"Postal code: {data['postal']}")
-    print(f"Latitude: {data['latitude']}")
-    print(f"Longitude: {data['longitude']}")
-    print(f"Timezone: {data['timezone']}")
-    print(f"ASN: {data['asn']}")
-    print(f"Organization: {data['org']}")
+    try:
+        data = requests.get(f"https://ipapi.co/{ip}/json/").json()
+        print(f"IP: {data['ip']}")
+        print(f"Version: {data['version']}")
+        print(f"City: {data['city']}")
+        print(f"Region: {data['region']}")
+        print(f"Region code: {data['region_code']}")
+        print(f"Country code: {data['country_code']}")
+        print(f"Country name: {data['country_name']}")
+        print(f"Country TLD: {data['country_tld']}")
+        print(f"In EU: {data['in_eu']}")
+        print(f"Postal code: {data['postal']}")
+        print(f"Latitude: {data['latitude']}")
+        print(f"Longitude: {data['longitude']}")
+        print(f"Timezone: {data['timezone']}")
+        print(f"ASN: {data['asn']}")
+        print(f"Organization: {data['org']}")
+    except requests.exceptions.ConnectionError:
+        print("An error occured. Please check your internet connection.")
+        exit(1)
 
     if _is_domain(address):
-        print('-' * 32)
+        print('-'*32)
         print("WHOIS Info:")
         start_whois(no_domain_entry=True, domain=address)
 
@@ -188,9 +212,10 @@ def spam_db_check():
     try:
         response = requests.request(method='GET', url=url, headers=headers, params=querystring)
         data = response.json()['data']
-    except KeyError:
-        print("Error. Did you entered correct ip?")
-        print(f"API Answer: {response.json()}")
+    except Exception as e:
+        print("Error. Check your ip and internet connection.")
+        # print(f"API Answer: {response.json()}")
+        print("Error:", e)
         exit(1)
 
     print(f"IP: {data['ipAddress']}")
@@ -225,6 +250,7 @@ main_menu = """
 [5] - Spam DB Check (Free API key required)
 [99] - Exit"""
 
+
 def entry():
     print(main_menu)
     try:
@@ -246,6 +272,7 @@ def entry():
             spam_db_check()
         case 99:
             exit(0)
+
 
 if __name__ == "__main__":
     entry()
