@@ -78,22 +78,36 @@ def start_nmap():
 def start_whois(no_domain_entry=False, domain="example.com"):
     if not no_domain_entry:
         domain = input("Domain: ")
-    domain_info = whois.query(domain)
+
+    try:
+        domain_info = whois.query(domain)
+
+    except whois.exceptions.FailedParsingWhoisOutput:
+        print("Domain does not exist.")
+        entry()
+
+    except whois.exceptions.UnknownTld:
+        print("Unknown TLD")
+        entry()
+
     print("-"*32)
-    print(f"Name: {domain_info.name}")
-    print(f"TLD: {domain_info.tld}")
-    print(f"Registrar: {domain_info.registrar}")
-    print(f"Registrant Country: {domain_info.registrant_country}")
-    # Format day.month.year
-    print(f"Creation date: {domain_info.creation_date.strftime('%d.%m.%Y')}")
-    print(f"Expiration date: {domain_info.expiration_date.strftime('%d.%m.%Y')}")
-    print(f"Last updated: {domain_info.last_updated.strftime('%d.%m.%Y')}")
-    print(f"Status: {domain_info.status}")
-    print(f"Statuses: {' '.join(domain_info.statuses)}")
-    print(f"DNSSEC: {domain_info.dnssec}")
-    print(f"Name servers: {' '.join(domain_info.name_servers)}")
-    print(f"Registrant: {domain_info.registrant}")
-    print(f"Emails: {' '.join(domain_info.emails)}")
+    try:
+        print(f"Name: {domain_info.name}")
+        print(f"TLD: {domain_info.tld}")
+        print(f"Registrar: {domain_info.registrar}")
+        print(f"Registrant Country: {domain_info.registrant_country}")
+        # Format day.month.year
+        print(f"Creation date: {domain_info.creation_date.strftime('%d.%m.%Y')}")
+        print(f"Expiration date: {domain_info.expiration_date.strftime('%d.%m.%Y')}")
+        print(f"Last updated: {domain_info.last_updated.strftime('%d.%m.%Y')}")
+        print(f"Status: {domain_info.status}")
+        print(f"Statuses: {' '.join(domain_info.statuses)}")
+        print(f"DNSSEC: {domain_info.dnssec}")
+        print(f"Name servers: {' '.join(domain_info.name_servers)}")
+        print(f"Registrant: {domain_info.registrant}")
+        print(f"Emails: {' '.join(domain_info.emails)}")
+    except AttributeError as e:
+        print("Some entry does not exist.", e)
     entry()
 
 
@@ -106,7 +120,7 @@ def dns_records_info(no_domain_entry=False, domain="example.com"):
         'SRV', 'SSHFP', 'SVCB', 'TLSA', 'TXT', 'URI'
     ]
     dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
-    dns_entry = input("Enter DNS resolverer (0 - default (cloudflare), 1 - custom): ")
+    dns_entry = input("Enter DNS resolver (0 - default (cloudflare), 1 - custom): ")
     match dns_entry:
         case "0":
             dns.resolver.default_resolver.nameservers = ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111',
@@ -169,8 +183,10 @@ def complex_ip_info():
         print(f"ASN: {data['asn']}")
         print(f"Organization: {data['org']}")
     except requests.exceptions.ConnectionError:
-        print("An error occured. Please check your internet connection.")
+        print("An error occurred. Please check your internet connection.")
         exit(1)
+    except KeyError as e:
+        print("Some entry does not exist.", e)
 
     if _is_domain(address):
         print('-'*32)
