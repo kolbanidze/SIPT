@@ -1,22 +1,25 @@
 from os import getenv
 from dotenv import load_dotenv, set_key
-import requests
+from requests import request
+from requests.exceptions import ConnectionError
 
 
 class SpamDB:
-    def __init__(self):
+    def __init__(self) -> None:
         self.get_api_key()
-        self.get_spam_info()
+        ip = input("IP: ")
+        self.get_spam_info(ip)
 
     @staticmethod
     def get_api_key() -> None:
+        """Gets API key from dotenv (.env)"""
         # Getting API key
 
         if load_dotenv():
             if getenv('API') is None:
                 print(
-                    "You need to register at https://abuseipdb.com and get free API key. Then enter it here and it will "
-                    "be automatically saved")
+                    "You need to register at https://abuseipdb.com and get free API key. "
+                    "Then enter it here and it will be automatically saved")
                 api_key = input("API Key: ")
                 set_key('.env', 'API', api_key)
                 load_dotenv()
@@ -28,11 +31,12 @@ class SpamDB:
             load_dotenv()
 
     @staticmethod
-    def get_spam_info() -> None:
+    def get_spam_info(ip: str) -> None:
+        """Gets spam info about ip using abuseipdb api v2.
+        Prints all available info about ip and handles errors"""
         url = 'https://api.abuseipdb.com/api/v2/check'
         api = getenv('API')
 
-        ip = input("IP: ")
         querystring = {
             'ipAddress': f'{ip}',
             'maxAgeInDays': '180'
@@ -41,15 +45,20 @@ class SpamDB:
             'Accept': 'application/json',
             'Key': f'{api}'
         }
+
         try:
-            response = requests.request(method='GET', url=url, headers=headers, params=querystring)
-            data = response.json()['data']
-        except Exception as e:
-            print("Error. Check your ip and internet connection.")
-            # print(f"API Answer: {response.json()}")
-            print("Error:", e)
+            response = request(method='GET', url=url, headers=headers, params=querystring).json()
+        except ConnectionError:
+            print("Connection Error. Please check your internet connection.")
             exit(1)
 
+        if response.get('errors') is not None:
+            print("Error", response['errors'][0]['detail'])
+            exit(1)
+
+        data = response['data']
+
+        print('='*32)
         print(f"IP: {data['ipAddress']}")
         print(f"Is Public: {data['isPublic']}")
         print(f"IP Version: {data['ipVersion']}")
@@ -64,6 +73,7 @@ class SpamDB:
         print(f"Total amount of reports: {data['totalReports']}")
         print(f"Number of distinct users: {data['numDistinctUsers']}")
         print(f"Last reported at: {data['lastReportedAt']}")
+        print('='*32)
 
 
 if __name__ == "__main__":
