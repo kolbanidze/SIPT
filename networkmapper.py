@@ -64,7 +64,11 @@ class NetworkMapper:
 
         choice = input("> ")
 
-        ip = input("IP: ")
+        if choice != "0":
+            ip = input("IP: ")
+        else:
+            # I added only so that the PyCharm would not swear :)
+            ip = None
 
         match choice:
             case "1":
