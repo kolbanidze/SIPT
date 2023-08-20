@@ -40,15 +40,26 @@ For getting Complex IP/Domain Info it uses: socket (getting ip from domain), ipa
 For checking in spam db it uses: [AbuseIPDB API (v2)](https://docs.abuseipdb.com/?python#check-endpoint)
 
 # Installation
-P.S. in order to use nmap you have to install nmap on your system (at least binary)
+P.S. you need to add nmap and whois binaries to your path.
 
-    git clone https://github.com/kolbanidze/SIPT
-    cd SIPT
-    pip install -r requirements.txt
+Windows: [nmap](https://nmap.org/download.html#windows), [whois](https://learn.microsoft.com/en-us/sysinternals/downloads/whois). 
+
+Linux: depends on your package manager. More likely packages name will be same
+
+For Fedora it is ```sudo dnf install nmap whois```
+
+```
+git clone https://github.com/kolbanidze/SIPT
+cd SIPT
+pip install -r requirements.txt
+```
 
 # Usage
 
-    python main.py
+```
+python main.py
+```
 or
-
-    python3 main.py
+```
+python3 main.py
+```
