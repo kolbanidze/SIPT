@@ -42,7 +42,7 @@ For checking in spam db it uses: [AbuseIPDB API (v2)](https://docs.abuseipdb.com
 # Installation
 P.S. you need to add nmap and whois binaries to your path.
 
-Windows: [nmap](https://nmap.org/download.html#windows), [whois](https://learn.microsoft.com/en-us/sysinternals/downloads/whois). 
+Windows: [nmap](https://nmap.org/download.html#windows), [whois](https://learn.microsoft.com/en-us/sysinternals/downloads/whois). [Auto install script](https://gist.github.com/kolbanidze/a61e9ce93a032c984bd71f95e245af5e)
 
 Linux: depends on your package manager. More likely packages name will be same
 
